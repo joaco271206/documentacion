@@ -1,3 +1,7 @@
+# integrantes 
+Valentín Anzorena 
+
+Joaquín Gómez
 # documentacion
 este proyecto permite generar tarjetas en HTML de manera dinamica con un click en un boton, cada tarjeta contiene un titulo, un subtitulo, una imagen, un boton editar y un boton eliminar. 
 
@@ -19,10 +23,27 @@ este proyecto permite generar tarjetas en HTML de manera dinamica con un click e
 
 -un subtitulo (h4): 'subtitulo predefinido'
 
--una imagen (img)con una url predefinida
+-una imagen (img) con una url predefinida
 
 -un input de texto (input type="texto") oculto para modificar la imagen
 
 -un boton "eliminar" que borra la tarjeta
 
 -un boton "editar"/"aceptar" que permite editar el contenido textual y la imagen.
+
+# css
++ con el css:
+
+-le dimos formas a las tarjetas
+
+-le dimos color a los fondos de las tarjetas 
+
+-le dimos el color al fondo de la pagina
+
+-se le dio el color a los botones "eliminar" y "editar/aceptar"
+
+-le dimos un margen maximo a la imagen 
+
+-le dimos forma y color a el boton de agregar tajeta 
+
+-
