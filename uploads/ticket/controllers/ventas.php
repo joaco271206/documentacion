@@ -1,103 +1,94 @@
 <?php
 /**
- * Modelo Evento
- * Mejoras: Manejo de errores, cierre de statements, validación de entrada
+ * Controlador de Ventas
+ * Maneja la lógica de negocio para el listado de ventas
  */
 
-class Evento {
+class VentasController {
     private $conn;
+    private $eventoModel;
+    private $ventaModel;
 
     public function __construct($db) {
         $this->conn = $db;
+        $this->eventoModel = new Evento($db);
+        $this->ventaModel = new Venta($db);
     }
 
     /**
-     * Verifica si existe un evento por su ID
-     * @param int $evento_id ID del evento
-     * @return bool True si existe, False si no
+     * Lista las ventas de un evento en una fecha específica
      */
-    public function existeEvento($evento_id) {
-        // Validar que el ID sea un número entero positivo
+    public function listar() {
+        // Obtener y validar parámetros
+        $evento_id = $_GET['id_evento'] ?? null;
+        $fecha = $_GET['fecha'] ?? null;
+
+        // Validar que los parámetros existan
+        if (empty($evento_id) || empty($fecha)) {
+            $this->mostrarError("Debe seleccionar un evento y una fecha.");
+            return;
+        }
+
+        // Validar que el evento_id sea numérico
         if (!is_numeric($evento_id) || $evento_id <= 0) {
-            return false;
+            $this->mostrarError("ID de evento inválido.");
+            return;
         }
 
-        $sql = "SELECT COUNT(*) as total FROM Eventos WHERE id_evento = ?";
-        $stmt = $this->conn->prepare($sql);
-        
-        if (!$stmt) {
-            error_log("Error al preparar consulta: " . $this->conn->error);
-            return false;
+        // Validar formato de fecha
+        if (!$this->validarFecha($fecha)) {
+            $this->mostrarError("Formato de fecha inválido. Use el formato AAAA-MM-DD.");
+            return;
         }
 
-        $stmt->bind_param("i", $evento_id);
-        
-        if (!$stmt->execute()) {
-            error_log("Error al ejecutar consulta: " . $stmt->error);
-            $stmt->close();
-            return false;
+        // Verificar que el evento existe
+        if (!$this->eventoModel->existeEvento($evento_id)) {
+            $this->mostrarError("El evento seleccionado no existe.");
+            return;
         }
 
-        $result = $stmt->get_result();
-        $row = $result->fetch_assoc();
-        $stmt->close();
-        
-        return $row['total'] > 0;
+        // Obtener información del evento
+        $evento = $this->eventoModel->obtenerEvento($evento_id);
+        $nombre_evento = $evento['nombre'] ?? 'Evento desconocido';
+
+        // Obtener ventas
+        $ventas = $this->ventaModel->listarVentas($evento_id, $fecha);
+
+        // Obtener resumen
+        $resumen = $this->ventaModel->obtenerResumen($evento_id, $fecha);
+
+        // Obtener lista de eventos para el formulario
+        $eventos = $this->eventoModel->listarEventos();
+
+        // Incluir la vista con los datos
+        include("views/lista_ventas.php");
     }
 
     /**
-     * Obtiene información de un evento por su ID
-     * @param int $evento_id ID del evento
-     * @return array|null Datos del evento o null si no existe
+     * Muestra un mensaje de error
      */
-    public function obtenerEvento($evento_id) {
-        if (!is_numeric($evento_id) || $evento_id <= 0) {
-            return null;
-        }
-
-        // Solo seleccionar columnas que existen en la tabla
-        $sql = "SELECT id_evento, nombre, precio FROM Eventos WHERE id_evento = ?";
-        $stmt = $this->conn->prepare($sql);
+    private function mostrarError($mensaje) {
+        $error = $mensaje;
+        $eventos = $this->eventoModel->listarEventos();
+        $evento_id = $_GET['id_evento'] ?? '';
+        $fecha = $_GET['fecha'] ?? '';
+        $ventas = [];
+        $nombre_evento = '';
+        $resumen = ['total_ventas' => 0, 'total_entradas' => 0, 'monto_total' => 0];
         
-        if (!$stmt) {
-            error_log("Error al preparar consulta: " . $this->conn->error);
-            return null;
-        }
-
-        $stmt->bind_param("i", $evento_id);
-        
-        if (!$stmt->execute()) {
-            error_log("Error al ejecutar consulta: " . $stmt->error);
-            $stmt->close();
-            return null;
-        }
-
-        $result = $stmt->get_result();
-        $evento = $result->fetch_assoc();
-        $stmt->close();
-        
-        return $evento;
+        include("views/error.php");
     }
 
     /**
-     * Obtiene todos los eventos activos
-     * @return array Lista de eventos
+     * Valida el formato de una fecha
      */
-    public function listarEventos() {
-        $sql = "SELECT id_evento, nombre FROM Eventos ORDER BY nombre ASC";
-        $result = $this->conn->query($sql);
-        
-        if (!$result) {
-            error_log("Error al listar eventos: " . $this->conn->error);
-            return [];
+    private function validarFecha($fecha) {
+        if (empty($fecha)) {
+            return false;
         }
 
-        $eventos = [];
-        while ($row = $result->fetch_assoc()) {
-            $eventos[] = $row;
-        }
-        
-        return $eventos;
+        $d = DateTime::createFromFormat('Y-m-d', $fecha);
+        return $d && $d->format('Y-m-d') === $fecha;
     }
 }
 ?>

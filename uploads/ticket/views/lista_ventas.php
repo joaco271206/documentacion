@@ -105,6 +105,48 @@ $resumen = $resumen ?? ['total_ventas' => 0, 'total_entradas' => 0, 'monto_total
             box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
         }
 
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+            margin-top: 10px;
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 5px 20px rgba(108, 117, 125, 0.4);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .action-buttons button {
+            flex: 1;
+        }
+
+        @media (max-width: 768px) {
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+
+        @media print {
+            .search-form,
+            .action-buttons {
+                display: none !important;
+            }
+
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .ticket-container {
+                box-shadow: none;
+                padding: 20px;
+            }
+        }
+
         .ticket-container {
             background: white;
             padding: 30px;
@@ -275,7 +317,9 @@ $resumen = $resumen ?? ['total_ventas' => 0, 'total_entradas' => 0, 'monto_total
                            required>
                 </div>
 
-                <button type="submit">🔍 Buscar Ventas</button>
+                <div class="action-buttons">
+                    <button type="submit">🔍 Buscar Ventas</button>
+                </div>
             </form>
         </div>
 
@@ -341,6 +385,15 @@ $resumen = $resumen ?? ['total_ventas' => 0, 'total_entradas' => 0, 'monto_total
                         ℹ️ No se encontraron ventas para este evento en la fecha seleccionada.
                     </div>
                 <?php endif; ?>
+
+                <div class="action-buttons">
+                    <button type="button" onclick="window.location.href='index.php'" class="btn-secondary">
+                        🔄 Nueva Búsqueda
+                    </button>
+                    <button type="button" onclick="window.print()" style="background: linear-gradient(135deg, #27ae60 0%, #229954 100%);">
+                        🖨️ Imprimir Reporte
+                    </button>
+                </div>
             </div>
         <?php endif; ?>
     </div>
